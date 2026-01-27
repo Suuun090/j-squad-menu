@@ -1,10 +1,11 @@
-const CACHE_NAME = 'double-j-menu-v1';
+const CACHE_NAME = 'double-j-menu-v2';
 const urlsToCache = [
   '/',
   '/index.html',
   '/css/style.css',
   '/js/app.js',
   '/js/install.js',
+  '/js/supabase-config.js',
   '/manifest.json',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png'

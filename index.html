@@ -31,7 +31,7 @@
         <main>
             <section class="hero">
                 <h2>Welcome to Double J Menu</h2>
-                <p>Your digital menu solution</p>
+                <p>🩵 a product of love 🩵</p>
             </section>
             
             <!-- Add Item Form -->
@@ -72,6 +72,19 @@
     </div>
     
     <!-- Scripts -->
+    <script>
+    // Temporary: Force unregister old service worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            for(let registration of registrations) {
+                registration.unregister();
+                console.log('Service worker unregistered');
+            }
+        });
+    }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/supabase-config.js"></script>
     <script src="/js/app.js"></script>
     <script src="/js/install.js"></script>
 </body>

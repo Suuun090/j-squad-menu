@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('Double J Menu app loaded');
   loadMenuItems();
   initializeForm();
+  subscribeToRealtimeUpdates();
 });
 
 // Initialize form handlers
@@ -42,48 +43,54 @@ function initializeForm() {
   });
 }
 
-// Load menu items from localStorage
-function loadMenuItems() {
+// Load menu items from Supabase
+async function loadMenuItems() {
   const menuContainer = document.getElementById('menuItems');
-  menuContainer.innerHTML = '';
+  menuContainer.innerHTML = '<p class="loading">Loading menu items...</p>';
   
-  // Get items from localStorage
-  let menuItems = getMenuItemsFromStorage();
-  
-  // If no items, add sample data
-  if (menuItems.length === 0) {
-    menuItems = [
-      { id: Date.now() + 1, name: 'Sample Item 1', description: 'Description for item 1', price: '$10.99' },
-      { id: Date.now() + 2, name: 'Sample Item 2', description: 'Description for item 2', price: '$12.99' },
-      { id: Date.now() + 3, name: 'Sample Item 3', description: 'Description for item 3', price: '$8.99' }
-    ];
-    saveMenuItemsToStorage(menuItems);
-  }
-  
-  // Render menu items
-  if (menuItems.length === 0) {
-    menuContainer.innerHTML = '<p class="no-items">No menu items yet. Add your first item!</p>';
-  } else {
-    menuItems.forEach(item => {
-      const itemElement = createMenuItem(item);
-      menuContainer.appendChild(itemElement);
-    });
+  try {
+    console.log('Starting to load menu items...');
+    
+    // Check if Supabase is loaded
+    if (typeof supabase === 'undefined') {
+      throw new Error('Supabase client not loaded');
+    }
+    
+    // Get items from Supabase
+    const menuItems = await db.getMenuItems();
+    
+    console.log('Menu items loaded:', menuItems);
+    
+    // Clear loading message
+    menuContainer.innerHTML = '';
+    
+    // Render menu items
+    if (menuItems.length === 0) {
+      menuContainer.innerHTML = '<p class="no-items">No menu items yet. Add your first item!</p>';
+    } else {
+      menuItems.forEach(item => {
+        const itemElement = createMenuItem(item);
+        menuContainer.appendChild(itemElement);
+      });
+    }
+  } catch (error) {
+    console.error('Error loading menu items:', error);
+    console.error('Error details:', error.message, error.stack);
+    menuContainer.innerHTML = `<p class="error">Failed to load menu items: ${error.message}<br>Check console for details.</p>`;
   }
 }
 
-// Get menu items from localStorage
-function getMenuItemsFromStorage() {
-  const items = localStorage.getItem('menuItems');
-  return items ? JSON.parse(items) : [];
-}
-
-// Save menu items to localStorage
-function saveMenuItemsToStorage(items) {
-  localStorage.setItem('menuItems', JSON.stringify(items));
+// Subscribe to real-time updates
+function subscribeToRealtimeUpdates() {
+  db.subscribeToChanges((payload) => {
+    console.log('Real-time update:', payload);
+    // Reload items when changes occur
+    loadMenuItems();
+  });
 }
 
 // Add new menu item
-function addMenuItem() {
+async function addMenuItem() {
   const name = document.getElementById('itemName').value.trim();
   const description = document.getElementById('itemDescription').value.trim();
   const price = document.getElementById('itemPrice').value.trim();
@@ -94,39 +101,45 @@ function addMenuItem() {
   }
   
   const newItem = {
-    id: Date.now(),
     name: name,
     description: description,
     price: price
   };
   
-  // Get existing items and add new one
-  const menuItems = getMenuItemsFromStorage();
-  menuItems.push(newItem);
-  saveMenuItemsToStorage(menuItems);
-  
-  // Reset form and reload items
-  document.getElementById('addItemForm').reset();
-  document.getElementById('addItemForm').style.display = 'none';
-  document.getElementById('toggleFormBtn').textContent = '+ Add New Item';
-  loadMenuItems();
-  
-  // Show success message
-  showNotification('Item added successfully!', 'success');
+  try {
+    // Add to Supabase
+    await db.addMenuItem(newItem);
+    
+    // Reset form
+    document.getElementById('addItemForm').reset();
+    document.getElementById('addItemForm').style.display = 'none';
+    document.getElementById('toggleFormBtn').textContent = '+ Add New Item';
+    
+    // Reload items
+    await loadMenuItems();
+    
+    // Show success message
+    showNotification('Item added successfully!', 'success');
+  } catch (error) {
+    console.error('Error adding item:', error);
+    showNotification('Failed to add item. Please try again.', 'error');
+  }
 }
 
 // Delete menu item
-function deleteMenuItem(id) {
+async function deleteMenuItem(id) {
   if (!confirm('Are you sure you want to delete this item?')) {
     return;
   }
   
-  let menuItems = getMenuItemsFromStorage();
-  menuItems = menuItems.filter(item => item.id !== id);
-  saveMenuItemsToStorage(menuItems);
-  loadMenuItems();
-  
-  showNotification('Item deleted successfully!', 'success');
+  try {
+    await db.deleteMenuItem(id);
+    await loadMenuItems();
+    showNotification('Item deleted successfully!', 'success');
+  } catch (error) {
+    console.error('Error deleting item:', error);
+    showNotification('Failed to delete item. Please try again.', 'error');
+  }
 }
 
 // Create menu item element
