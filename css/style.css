@@ -284,11 +284,11 @@ main {
 }
 
 .edit-btn {
-    background-color: #2196F3;
+    background-color: #89CFF0;
 }
 
 .edit-btn:hover {
-    background-color: #1976D2;
+    background-color: #6ABDE0;
     transform: scale(1.1);
 }
 

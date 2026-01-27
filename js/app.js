@@ -133,6 +133,8 @@ async function addMenuItem() {
   const tag = document.getElementById('itemTag').value.trim();
   const editingItemId = document.getElementById('editingItemId').value;
   
+  console.log('Form submitted:', { name, description, tag, editingItemId });
+  
   if (!name || !tag) {
     alert('Please fill in all required fields');
     return;
@@ -144,13 +146,17 @@ async function addMenuItem() {
     tag: tag
   };
   
+  console.log('Item data:', itemData);
+  
   try {
     if (editingItemId) {
       // Update existing item
+      console.log('Updating item ID:', editingItemId);
       await db.updateMenuItem(parseInt(editingItemId), itemData);
       showNotification('Item updated successfully!', 'success');
     } else {
       // Add new item
+      console.log('Adding new item');
       await db.addMenuItem(itemData);
       showNotification('Item added successfully!', 'success');
     }
@@ -164,6 +170,7 @@ async function addMenuItem() {
     document.getElementById('submitBtn').textContent = 'Add Item';
     
     // Reload items
+    console.log('Reloading menu items...');
     await loadMenuItems();
   } catch (error) {
     console.error('Error saving item:', error);
@@ -174,8 +181,11 @@ async function addMenuItem() {
 // Edit menu item
 async function editMenuItem(id) {
   try {
+    console.log('Editing item with ID:', id);
     const items = await db.getMenuItems();
     const item = items.find(i => i.id === id);
+    
+    console.log('Found item:', item);
     
     if (!item) {
       showNotification('Item not found', 'error');
@@ -187,6 +197,8 @@ async function editMenuItem(id) {
     document.getElementById('itemDescription').value = item.description || '';
     document.getElementById('itemTag').value = item.tag || '';
     document.getElementById('editingItemId').value = id;
+    
+    console.log('Form populated with tag:', item.tag);
     
     // Update form UI
     document.getElementById('formTitle').textContent = 'Edit Menu Item';

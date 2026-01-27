@@ -57,6 +57,7 @@ const db = {
   // Update menu item
   async updateMenuItem(id, item) {
     try {
+      console.log('Updating menu item in Supabase:', id, item);
       const { data, error } = await supabaseClient
         .from('menu_items')
         .update({
@@ -67,7 +68,11 @@ const db = {
         .eq('id', id)
         .select();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase update error:', error);
+        throw error;
+      }
+      console.log('Update successful:', data);
       return data[0];
     } catch (error) {
       console.error('Error updating menu item:', error);
