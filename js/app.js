@@ -26,9 +26,15 @@ function initializeForm() {
   const addItemForm = document.getElementById('addItemForm');
   const cancelBtn = document.getElementById('cancelBtn');
   
-  toggleFormBtn.addEventListener('click', () => {
-    addItemForm.style.display = addItemForm.style.display === 'none' ? 'block' : 'none';
-    toggleFormBtn.textContent = addItemForm.style.display === 'none' ? '+ Add New Item' : '− Close Form';
+  toggleFormBtn.addEventListener('click', async () => {
+    const isHidden = addItemForm.style.display === 'none';
+    addItemForm.style.display = isHidden ? 'block' : 'none';
+    toggleFormBtn.textContent = isHidden ? '− Close Form' : '+ Add New Item';
+    
+    // Load existing tags when form is opened
+    if (isHidden) {
+      await loadExistingTags();
+    }
   });
   
   cancelBtn.addEventListener('click', () => {
@@ -41,6 +47,34 @@ function initializeForm() {
     e.preventDefault();
     addMenuItem();
   });
+}
+
+// Load existing tags from database
+async function loadExistingTags() {
+  try {
+    const menuItems = await db.getMenuItems();
+    const tags = [...new Set(menuItems.map(item => item.tag).filter(tag => tag))];
+    
+    // Update datalist
+    const datalist = document.getElementById('tagSuggestions');
+    datalist.innerHTML = tags.map(tag => `<option value="${escapeHtml(tag)}">`).join('');
+    
+    // Display tags as clickable buttons
+    const existingTagsDiv = document.getElementById('existingTags');
+    if (tags.length > 0) {
+      existingTagsDiv.innerHTML = '<small>Quick select:</small> ' + 
+        tags.map(tag => `<button type="button" class="tag-button" onclick="selectTag('${escapeHtml(tag)}')">${escapeHtml(tag)}</button>`).join('');
+    } else {
+      existingTagsDiv.innerHTML = '<small>No tags yet. Create your first one!</small>';
+    }
+  } catch (error) {
+    console.error('Error loading tags:', error);
+  }
+}
+
+// Select a tag from suggestions
+function selectTag(tag) {
+  document.getElementById('itemTag').value = tag;
 }
 
 // Load menu items from Supabase
@@ -93,9 +127,9 @@ function subscribeToRealtimeUpdates() {
 async function addMenuItem() {
   const name = document.getElementById('itemName').value.trim();
   const description = document.getElementById('itemDescription').value.trim();
-  const price = document.getElementById('itemPrice').value.trim();
+  const tag = document.getElementById('itemTag').value.trim();
   
-  if (!name || !price) {
+  if (!name || !tag) {
     alert('Please fill in all required fields');
     return;
   }
@@ -103,7 +137,7 @@ async function addMenuItem() {
   const newItem = {
     name: name,
     description: description,
-    price: price
+    tag: tag
   };
   
   try {
@@ -148,9 +182,9 @@ function createMenuItem(item) {
   div.className = 'menu-item';
   div.innerHTML = `
     <div class="menu-item-content">
+      ${item.tag ? `<span class="item-tag">${escapeHtml(item.tag)}</span>` : ''}
       <h3>${escapeHtml(item.name)}</h3>
       <p>${escapeHtml(item.description)}</p>
-      <p class="price"><strong>${escapeHtml(item.price)}</strong></p>
     </div>
     <button class="delete-btn" onclick="deleteMenuItem(${item.id})" title="Delete item">×</button>
   `;

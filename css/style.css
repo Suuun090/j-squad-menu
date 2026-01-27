@@ -149,6 +149,32 @@ main {
     border-color: var(--primary-color);
 }
 
+.existing-tags {
+    margin-top: 0.5rem;
+}
+
+.existing-tags small {
+    color: #666;
+    margin-right: 0.5rem;
+}
+
+.tag-button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.3rem 0.75rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    margin: 0.25rem;
+    transition: all 0.2s;
+}
+
+.tag-button:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-1px);
+}
+
 .form-actions {
     display: flex;
     gap: 1rem;
@@ -204,6 +230,17 @@ main {
 .menu-item:hover {
     transform: translateY(-4px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.item-tag {
+    display: inline-block;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
 }
 
 .menu-item-content h3 {

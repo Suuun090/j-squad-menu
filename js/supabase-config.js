@@ -42,7 +42,7 @@ const db = {
         .insert([{
           name: item.name,
           description: item.description,
-          price: item.price
+          tag: item.tag
         }])
         .select();
       
