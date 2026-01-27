@@ -54,6 +54,27 @@ const db = {
     }
   },
 
+  // Update menu item
+  async updateMenuItem(id, item) {
+    try {
+      const { data, error } = await supabaseClient
+        .from('menu_items')
+        .update({
+          name: item.name,
+          description: item.description,
+          tag: item.tag
+        })
+        .eq('id', id)
+        .select();
+      
+      if (error) throw error;
+      return data[0];
+    } catch (error) {
+      console.error('Error updating menu item:', error);
+      throw error;
+    }
+  },
+
   // Delete menu item
   async deleteMenuItem(id) {
     try {

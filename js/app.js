@@ -41,6 +41,9 @@ function initializeForm() {
     addItemForm.style.display = 'none';
     toggleFormBtn.textContent = '+ Add New Item';
     addItemForm.reset();
+    document.getElementById('editingItemId').value = '';
+    document.getElementById('formTitle').textContent = 'Add Menu Item';
+    document.getElementById('submitBtn').textContent = 'Add Item';
   });
   
   addItemForm.addEventListener('submit', (e) => {
@@ -123,40 +126,82 @@ function subscribeToRealtimeUpdates() {
   });
 }
 
-// Add new menu item
+// Add or update menu item
 async function addMenuItem() {
   const name = document.getElementById('itemName').value.trim();
   const description = document.getElementById('itemDescription').value.trim();
   const tag = document.getElementById('itemTag').value.trim();
+  const editingItemId = document.getElementById('editingItemId').value;
   
   if (!name || !tag) {
     alert('Please fill in all required fields');
     return;
   }
   
-  const newItem = {
+  const itemData = {
     name: name,
     description: description,
     tag: tag
   };
   
   try {
-    // Add to Supabase
-    await db.addMenuItem(newItem);
+    if (editingItemId) {
+      // Update existing item
+      await db.updateMenuItem(parseInt(editingItemId), itemData);
+      showNotification('Item updated successfully!', 'success');
+    } else {
+      // Add new item
+      await db.addMenuItem(itemData);
+      showNotification('Item added successfully!', 'success');
+    }
     
     // Reset form
     document.getElementById('addItemForm').reset();
     document.getElementById('addItemForm').style.display = 'none';
     document.getElementById('toggleFormBtn').textContent = '+ Add New Item';
+    document.getElementById('editingItemId').value = '';
+    document.getElementById('formTitle').textContent = 'Add Menu Item';
+    document.getElementById('submitBtn').textContent = 'Add Item';
     
     // Reload items
     await loadMenuItems();
-    
-    // Show success message
-    showNotification('Item added successfully!', 'success');
   } catch (error) {
-    console.error('Error adding item:', error);
-    showNotification('Failed to add item. Please try again.', 'error');
+    console.error('Error saving item:', error);
+    showNotification('Failed to save item. Please try again.', 'error');
+  }
+}
+
+// Edit menu item
+async function editMenuItem(id) {
+  try {
+    const items = await db.getMenuItems();
+    const item = items.find(i => i.id === id);
+    
+    if (!item) {
+      showNotification('Item not found', 'error');
+      return;
+    }
+    
+    // Populate form with item data
+    document.getElementById('itemName').value = item.name;
+    document.getElementById('itemDescription').value = item.description || '';
+    document.getElementById('itemTag').value = item.tag || '';
+    document.getElementById('editingItemId').value = id;
+    
+    // Update form UI
+    document.getElementById('formTitle').textContent = 'Edit Menu Item';
+    document.getElementById('submitBtn').textContent = 'Update Item';
+    document.getElementById('addItemForm').style.display = 'block';
+    document.getElementById('toggleFormBtn').textContent = '− Close Form';
+    
+    // Load existing tags
+    await loadExistingTags();
+    
+    // Scroll to form
+    document.getElementById('addItemForm').scrollIntoView({ behavior: 'smooth' });
+  } catch (error) {
+    console.error('Error loading item for edit:', error);
+    showNotification('Failed to load item. Please try again.', 'error');
   }
 }
 
@@ -186,7 +231,10 @@ function createMenuItem(item) {
       <h3>${escapeHtml(item.name)}</h3>
       <p>${escapeHtml(item.description)}</p>
     </div>
-    <button class="delete-btn" onclick="deleteMenuItem(${item.id})" title="Delete item">×</button>
+    <div class="item-actions">
+      <button class="edit-btn" onclick="editMenuItem(${item.id})" title="Edit item">✎</button>
+      <button class="delete-btn" onclick="deleteMenuItem(${item.id})" title="Delete item">×</button>
+    </div>
   `;
   return div;
 }

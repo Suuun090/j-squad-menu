@@ -39,7 +39,8 @@
                 <button id="toggleFormBtn" class="toggle-form-btn">+ Add New Item</button>
                 
                 <form id="addItemForm" class="add-item-form" style="display: none;">
-                    <h3>Add Menu Item</h3>
+                    <h3 id="formTitle">Add Menu Item</h3>
+                    <input type="hidden" id="editingItemId" value="">
                     <div class="form-group">
                         <label for="itemName">Item Name *</label>
                         <input type="text" id="itemName" required placeholder="e.g., Caesar Salad">
@@ -57,7 +58,7 @@
                         <div id="existingTags" class="existing-tags"></div>
                     </div>
                     <div class="form-actions">
-                        <button type="submit" class="btn-submit">Add Item</button>
+                        <button type="submit" class="btn-submit" id="submitBtn">Add Item</button>
                         <button type="button" id="cancelBtn" class="btn-cancel">Cancel</button>
                     </div>
                 </form>
