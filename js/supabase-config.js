@@ -42,7 +42,7 @@ const db = {
         .insert([{
           name: item.name,
           description: item.description,
-          tag: item.tag
+          tags: item.tags
         }])
         .select();
       
@@ -63,7 +63,7 @@ const db = {
         .update({
           name: item.name,
           description: item.description,
-          tag: item.tag
+          tags: item.tags
         })
         .eq('id', id)
         .select();

@@ -25,6 +25,11 @@ function initializeForm() {
   const toggleFormBtn = document.getElementById('toggleFormBtn');
   const addItemForm = document.getElementById('addItemForm');
   const cancelBtn = document.getElementById('cancelBtn');
+  const addTagBtn = document.getElementById('addTagBtn');
+  const itemTagInput = document.getElementById('itemTag');
+  
+  // Store selected tags
+  window.selectedTags = [];
   
   toggleFormBtn.addEventListener('click', async () => {
     const isHidden = addItemForm.style.display === 'none';
@@ -41,9 +46,22 @@ function initializeForm() {
     addItemForm.style.display = 'none';
     toggleFormBtn.textContent = '+ Add New Item';
     addItemForm.reset();
+    window.selectedTags = [];
+    updateSelectedTagsDisplay();
     document.getElementById('editingItemId').value = '';
     document.getElementById('formTitle').textContent = 'Add Menu Item';
     document.getElementById('submitBtn').textContent = 'Add Item';
+  });
+  
+  addTagBtn.addEventListener('click', () => {
+    addTag();
+  });
+  
+  itemTagInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addTag();
+    }
   });
   
   addItemForm.addEventListener('submit', (e) => {
@@ -54,11 +72,44 @@ function initializeForm() {
   });
 }
 
+// Add a tag to the selected tags
+function addTag() {
+  const tagInput = document.getElementById('itemTag');
+  const tag = tagInput.value.trim();
+  
+  if (tag && !window.selectedTags.includes(tag)) {
+    window.selectedTags.push(tag);
+    updateSelectedTagsDisplay();
+    tagInput.value = '';
+  }
+}
+
+// Remove a tag from selected tags
+function removeTag(tag) {
+  window.selectedTags = window.selectedTags.filter(t => t !== tag);
+  updateSelectedTagsDisplay();
+}
+
+// Update the display of selected tags
+function updateSelectedTagsDisplay() {
+  const container = document.getElementById('selectedTags');
+  if (window.selectedTags.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+  
+  container.innerHTML = window.selectedTags
+    .map(tag => `<span class="selected-tag">${escapeHtml(tag)} <button type="button" onclick="removeTag('${escapeHtml(tag)}')">×</button></span>`)
+    .join('');
+}
+
 // Load existing tags from database
 async function loadExistingTags() {
   try {
     const menuItems = await db.getMenuItems();
-    const tags = [...new Set(menuItems.map(item => item.tag).filter(tag => tag))];
+    // Get all unique tags from all items
+    const allTags = menuItems.flatMap(item => item.tags || []);
+    const tags = [...new Set(allTags)].filter(tag => tag);
     
     // Update datalist
     const datalist = document.getElementById('tagSuggestions');
@@ -68,7 +119,7 @@ async function loadExistingTags() {
     const existingTagsDiv = document.getElementById('existingTags');
     if (tags.length > 0) {
       existingTagsDiv.innerHTML = '<small>Quick select:</small> ' + 
-        tags.map(tag => `<button type="button" class="tag-button" onclick="selectTag('${escapeHtml(tag)}')">${escapeHtml(tag)}</button>`).join('');
+        tags.map(tag => `<button type="button" class="tag-button" onclick="quickAddTag('${escapeHtml(tag)}')">${escapeHtml(tag)}</button>`).join('');
     } else {
       existingTagsDiv.innerHTML = '<small>No tags yet. Create your first one!</small>';
     }
@@ -77,9 +128,12 @@ async function loadExistingTags() {
   }
 }
 
-// Select a tag from suggestions
-function selectTag(tag) {
-  document.getElementById('itemTag').value = tag;
+// Quick add a tag from suggestions
+function quickAddTag(tag) {
+  if (!window.selectedTags.includes(tag)) {
+    window.selectedTags.push(tag);
+    updateSelectedTagsDisplay();
+  }
 }
 
 // Load menu items from Supabase
@@ -132,20 +186,19 @@ function subscribeToRealtimeUpdates() {
 async function addMenuItem() {
   const name = document.getElementById('itemName').value.trim();
   const description = document.getElementById('itemDescription').value.trim();
-  const tag = document.getElementById('itemTag').value.trim();
   const editingItemId = document.getElementById('editingItemId').value;
   
-  console.log('Form submitted:', { name, description, tag, editingItemId });
+  console.log('Form submitted:', { name, description, tags: window.selectedTags, editingItemId });
   
-  if (!name || !tag) {
-    alert('Please fill in all required fields');
+  if (!name || window.selectedTags.length === 0) {
+    alert('Please fill in all required fields and add at least one tag');
     return;
   }
   
   const itemData = {
     name: name,
     description: description,
-    tag: tag
+    tags: window.selectedTags
   };
   
   console.log('Item data:', itemData);
@@ -170,6 +223,8 @@ async function addMenuItem() {
     document.getElementById('editingItemId').value = '';
     document.getElementById('formTitle').textContent = 'Add Menu Item';
     document.getElementById('submitBtn').textContent = 'Add Item';
+    window.selectedTags = [];
+    updateSelectedTagsDisplay();
     
     // Reload items
     console.log('Reloading menu items...');
@@ -197,10 +252,13 @@ async function editMenuItem(id) {
     // Populate form with item data
     document.getElementById('itemName').value = item.name;
     document.getElementById('itemDescription').value = item.description || '';
-    document.getElementById('itemTag').value = item.tag || '';
     document.getElementById('editingItemId').value = id;
     
-    console.log('Form populated with tag:', item.tag);
+    // Populate tags
+    window.selectedTags = item.tags || [];
+    updateSelectedTagsDisplay();
+    
+    console.log('Form populated with tags:', item.tags);
     
     // Update form UI
     document.getElementById('formTitle').textContent = 'Edit Menu Item';
@@ -239,9 +297,13 @@ async function deleteMenuItem(id) {
 function createMenuItem(item) {
   const div = document.createElement('div');
   div.className = 'menu-item';
+  const tags = item.tags && item.tags.length > 0 
+    ? item.tags.map(tag => `<span class="item-tag">${escapeHtml(tag)}</span>`).join('') 
+    : '';
+  
   div.innerHTML = `
     <div class="menu-item-content">
-      ${item.tag ? `<span class="item-tag">${escapeHtml(item.tag)}</span>` : ''}
+      ${tags}
       <h3>${escapeHtml(item.name)}</h3>
       <p>${escapeHtml(item.description)}</p>
     </div>
