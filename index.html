@@ -34,6 +34,31 @@
                 <p>Your digital menu solution</p>
             </section>
             
+            <!-- Add Item Form -->
+            <section class="add-item-section">
+                <button id="toggleFormBtn" class="toggle-form-btn">+ Add New Item</button>
+                
+                <form id="addItemForm" class="add-item-form" style="display: none;">
+                    <h3>Add Menu Item</h3>
+                    <div class="form-group">
+                        <label for="itemName">Item Name *</label>
+                        <input type="text" id="itemName" required placeholder="e.g., Caesar Salad">
+                    </div>
+                    <div class="form-group">
+                        <label for="itemDescription">Description</label>
+                        <textarea id="itemDescription" rows="3" placeholder="Brief description of the item"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="itemPrice">Price *</label>
+                        <input type="text" id="itemPrice" required placeholder="e.g., $12.99">
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-submit">Add Item</button>
+                        <button type="button" id="cancelBtn" class="btn-cancel">Cancel</button>
+                    </div>
+                </form>
+            </section>
+            
             <section class="menu-container">
                 <div id="menuItems">
                     <!-- Menu items will be loaded here -->
