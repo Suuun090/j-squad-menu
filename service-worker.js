@@ -1,12 +1,13 @@
-const CACHE_NAME = 'double-j-menu-v3';
+const CACHE_NAME = 'double-j-menu-v4';
 const urlsToCache = [
   './',
-  'index.html',
-  'css/style.css',
-  'js/app.js',
-  'js/install.js',
-  'js/supabase-config.js',
-  'manifest.json'
+  './index.html',
+  './css/style.css',
+  './css/tags.css',
+  './js/app.js',
+  './js/install.js',
+  './js/supabase-config.js',
+  './manifest.json'
 ];
 
 // Install event - cache resources
