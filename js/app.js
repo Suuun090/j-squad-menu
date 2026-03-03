@@ -297,15 +297,19 @@ async function deleteMenuItem(id) {
 function createMenuItem(item) {
   const div = document.createElement('div');
   div.className = 'menu-item';
-  const tags = item.tags && item.tags.length > 0 
-    ? item.tags.map(tag => `<span class="item-tag">${escapeHtml(tag)}</span>`).join('') 
+  const tags = item.tags && item.tags.length > 0
+    ? item.tags.map(tag => `<span class="item-tag">${escapeHtml(tag)}</span>`).join('')
     : '';
-  
+  const hasDescription = item.description && item.description.trim();
+
   div.innerHTML = `
     <div class="menu-item-content">
       ${tags}
-      <h3>${escapeHtml(item.name)}</h3>
-      <p>${escapeHtml(item.description)}</p>
+      <div class="item-name-row">
+        <h3>${escapeHtml(item.name)}</h3>
+        ${hasDescription ? `<button class="expand-btn" onclick="toggleDescription(this)" title="Show description">▸</button>` : ''}
+      </div>
+      ${hasDescription ? `<p class="item-description collapsed">${escapeHtml(item.description)}</p>` : ''}
     </div>
     <div class="item-actions">
       <button class="edit-btn" onclick="editMenuItem(${item.id})" title="Edit item">✎</button>
@@ -313,6 +317,13 @@ function createMenuItem(item) {
     </div>
   `;
   return div;
+}
+
+// Toggle description visibility
+function toggleDescription(btn) {
+  const desc = btn.closest('.menu-item-content').querySelector('.item-description');
+  const isCollapsed = desc.classList.toggle('collapsed');
+  btn.textContent = isCollapsed ? '▸' : '▾';
 }
 
 // Escape HTML to prevent XSS
