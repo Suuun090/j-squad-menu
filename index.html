@@ -23,6 +23,15 @@
 <body>
     <div id="app">
         <header>
+            <div class="header-left">
+                <button id="hamburgerBtn" class="hamburger-btn" aria-label="Open navigation">
+                    <span></span><span></span><span></span>
+                </button>
+                <div id="navDropdown" class="nav-dropdown" style="display: none;">
+                    <a href="#section-menu" class="nav-link" onclick="closeNav()">Menu</a>
+                    <a href="#section-tags" class="nav-link" onclick="closeNav()">Tags</a>
+                </div>
+            </div>
             <h1>Double J Menu</h1>
             <nav>
                 <button id="installBtn" class="install-button" style="display: none;">Install App</button>
@@ -69,14 +78,8 @@
                 </form>
             </section>
             
-            <!-- Tab navigation -->
-            <div class="tab-bar">
-                <button class="tab-btn active" data-tab="menu">Menu</button>
-                <button class="tab-btn" data-tab="tags">Tags</button>
-            </div>
-
-            <!-- Menu tab panel -->
-            <section id="tab-menu" class="tab-panel active">
+            <!-- Menu section -->
+            <section id="section-menu">
                 <div class="menu-container">
                     <div id="menuItems">
                         <!-- Menu items will be loaded here -->
@@ -84,8 +87,8 @@
                 </div>
             </section>
 
-            <!-- Tags tab panel -->
-            <section id="tab-tags" class="tab-panel">
+            <!-- Tags section -->
+            <section id="section-tags">
                 <div id="tagsPanel" class="tags-panel">
                     <!-- Tags will be loaded here -->
                 </div>

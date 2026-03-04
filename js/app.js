@@ -16,8 +16,9 @@ if ('serviceWorker' in navigator) {
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Double J Menu app loaded');
   loadMenuItems();
+  loadTagsPanel();
   initializeForm();
-  initialiseTabs();
+  initialiseHamburger();
   subscribeToRealtimeUpdates();
 });
 
@@ -85,23 +86,24 @@ function addTag() {
   }
 }
 
-// Initialise tab navigation
-function initialiseTabs() {
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const target = btn.dataset.tab;
+// Initialise hamburger navigation
+function initialiseHamburger() {
+  const btn = document.getElementById('hamburgerBtn');
+  const dropdown = document.getElementById('navDropdown');
 
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-
-      btn.classList.add('active');
-      document.getElementById(`tab-${target}`).classList.add('active');
-
-      if (target === 'tags') {
-        loadTagsPanel();
-      }
-    });
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = dropdown.style.display === 'block';
+    dropdown.style.display = isOpen ? 'none' : 'block';
   });
+
+  document.addEventListener('click', () => {
+    dropdown.style.display = 'none';
+  });
+}
+
+function closeNav() {
+  document.getElementById('navDropdown').style.display = 'none';
 }
 
 // Load and render the tags panel
