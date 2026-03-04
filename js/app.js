@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('Double J Menu app loaded');
   loadMenuItems();
   initializeForm();
+  initialiseTabs();
   subscribeToRealtimeUpdates();
 });
 
@@ -82,6 +83,81 @@ function addTag() {
     updateSelectedTagsDisplay();
     tagInput.value = '';
   }
+}
+
+// Initialise tab navigation
+function initialiseTabs() {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.tab;
+
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+
+      btn.classList.add('active');
+      document.getElementById(`tab-${target}`).classList.add('active');
+
+      if (target === 'tags') {
+        loadTagsPanel();
+      }
+    });
+  });
+}
+
+// Load and render the tags panel
+async function loadTagsPanel() {
+  const panel = document.getElementById('tagsPanel');
+  panel.innerHTML = '<p class="tags-panel-empty">Loading...</p>';
+
+  try {
+    window.allMenuItems = await db.getMenuItems();
+    renderTagsPanel(window.allMenuItems);
+  } catch (error) {
+    console.error('Error loading tags panel:', error);
+    panel.innerHTML = '<p class="tags-panel-empty">Failed to load tags.</p>';
+  }
+}
+
+function renderTagsPanel(items, selectedTag = null) {
+  const panel = document.getElementById('tagsPanel');
+  const tally = {};
+  items.forEach(item => {
+    (item.tags || []).forEach(tag => {
+      tally[tag] = (tally[tag] || 0) + 1;
+    });
+  });
+
+  const tags = Object.keys(tally).sort();
+  if (tags.length === 0) {
+    panel.innerHTML = '<p class="tags-panel-empty">No tags added yet.</p>';
+    return;
+  }
+
+  const tagBar = tags.map(tag => `
+    <button class="tag-card ${tag === selectedTag ? 'active' : ''}" onclick="selectTagFilter('${escapeHtml(tag)}')">
+      ${escapeHtml(tag)}
+      <span class="tag-card-count">${tally[tag]}</span>
+    </button>`).join('');
+
+  let itemsHtml = '';
+  if (selectedTag) {
+    const filtered = items.filter(item => (item.tags || []).includes(selectedTag));
+    itemsHtml = `
+      <div class="tag-items-list">
+        ${filtered.map(item => `
+          <div class="tag-item-row">
+            <strong>${escapeHtml(item.name)}</strong>
+            ${item.description ? `<span class="tag-item-desc">${escapeHtml(item.description)}</span>` : ''}
+          </div>`).join('')}
+      </div>`;
+  }
+
+  panel.innerHTML = `<div class="tag-bar">${tagBar}</div>${itemsHtml}`;
+}
+
+function selectTagFilter(tag) {
+  const selectedTag = tag;
+  renderTagsPanel(window.allMenuItems, selectedTag);
 }
 
 // Remove a tag from selected tags

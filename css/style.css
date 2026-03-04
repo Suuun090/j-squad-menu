@@ -211,6 +211,117 @@ main {
     background-color: #e0e0e0;
 }
 
+/* Tab bar */
+.tab-bar {
+    display: flex;
+    gap: 0;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 0.6rem 1.25rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #999;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: color 0.2s, border-color 0.2s;
+}
+
+.tab-btn:hover {
+    color: var(--primary-color);
+}
+
+.tab-btn.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+/* Tab panels */
+.tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+/* Tags panel */
+.tags-panel {
+    padding: 0.5rem 0;
+}
+
+.tags-panel-empty {
+    color: #999;
+    font-size: 1rem;
+    padding: 2rem;
+    text-align: center;
+}
+
+.tag-bar {
+    margin-bottom: 1.25rem;
+}
+
+.tag-card {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: var(--card-background);
+    border: 1px solid #e8e8e8;
+    border-radius: 20px;
+    padding: 0.4rem 1rem;
+    margin: 0.3rem;
+    box-shadow: var(--shadow);
+    font-size: 0.9rem;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.tag-card:hover {
+    border-color: var(--primary-color);
+}
+
+.tag-card.active {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px var(--primary-color);
+}
+
+.tag-card-count {
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 10px;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.tag-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.tag-item-row {
+    background-color: var(--card-background);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.tag-item-desc {
+    color: #666;
+    font-size: 0.9rem;
+}
+
 /* Menu container */
 .menu-container {
     display: grid;
