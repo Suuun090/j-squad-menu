@@ -118,6 +118,12 @@ function closeNav() {
   document.getElementById('navDropdown').style.display = 'none';
 }
 
+function navigateTo(page) {
+  closeNav();
+  window.location.hash = '#' + page;
+  window.scrollTo(0, 0);
+}
+
 // Load and render the tags panel
 async function loadTagsPanel() {
   const panel = document.getElementById('tagsPanel');
