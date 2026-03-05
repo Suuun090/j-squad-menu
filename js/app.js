@@ -16,11 +16,23 @@ if ('serviceWorker' in navigator) {
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Double J Menu app loaded');
   loadMenuItems();
-  loadTagsPanel();
   initializeForm();
   initialiseHamburger();
+  initialiseRouter();
   subscribeToRealtimeUpdates();
 });
+
+// Router
+function initialiseRouter() {
+  function navigate() {
+    const page = window.location.hash === '#tags' ? 'tags' : 'menu';
+    document.getElementById('page-menu').style.display = page === 'menu' ? 'block' : 'none';
+    document.getElementById('page-tags').style.display = page === 'tags' ? 'block' : 'none';
+    if (page === 'tags') loadTagsPanel();
+  }
+  window.addEventListener('hashchange', navigate);
+  navigate();
+}
 
 // Initialize form handlers
 function initializeForm() {

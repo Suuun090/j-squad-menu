@@ -333,11 +333,6 @@ main {
     font-size: 0.9rem;
 }
 
-#section-menu,
-#section-tags {
-    scroll-margin-top: 70px;
-}
-
 /* Menu container */
 .menu-container {
     display: grid;
