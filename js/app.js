@@ -132,7 +132,7 @@ async function loadTagsPanel() {
   }
 }
 
-function renderTagsPanel(items, selectedTag = null) {
+function renderTagsPanel(items) {
   const panel = document.getElementById('tagsPanel');
   const tally = {};
   items.forEach(item => {
@@ -148,30 +148,29 @@ function renderTagsPanel(items, selectedTag = null) {
   }
 
   const tagBar = tags.map(tag => `
-    <button class="tag-card ${tag === selectedTag ? 'active' : ''}" onclick="selectTagFilter('${escapeHtml(tag)}')">
+    <button class="tag-card" onclick="selectTagFilter('${escapeHtml(tag)}')">
       ${escapeHtml(tag)}
       <span class="tag-card-count">${tally[tag]}</span>
     </button>`).join('');
 
-  let itemsHtml = '';
-  if (selectedTag) {
-    const filtered = items.filter(item => (item.tags || []).includes(selectedTag));
-    itemsHtml = `
-      <div class="tag-items-list">
-        ${filtered.map(item => `
-          <div class="tag-item-row">
-            <strong>${escapeHtml(item.name)}</strong>
-            ${item.description ? `<span class="tag-item-desc">${escapeHtml(item.description)}</span>` : ''}
-          </div>`).join('')}
-      </div>`;
-  }
-
-  panel.innerHTML = `<div class="tag-bar">${tagBar}</div>${itemsHtml}`;
+  panel.innerHTML = `<div class="tag-bar">${tagBar}</div>`;
 }
 
 function selectTagFilter(tag) {
-  const selectedTag = tag;
-  renderTagsPanel(window.allMenuItems, selectedTag);
+  const filtered = window.allMenuItems.filter(item => (item.tags || []).includes(tag));
+  document.getElementById('tagItemsTitle').textContent = tag;
+  document.getElementById('tagItemsList').innerHTML = filtered.map(item => `
+    <div class="tag-item-row">
+      <strong>${escapeHtml(item.name)}</strong>
+      ${item.description ? `<span class="tag-item-desc">${escapeHtml(item.description)}</span>` : ''}
+    </div>`).join('');
+  document.getElementById('tagsListView').style.display = 'none';
+  document.getElementById('tagItemsView').style.display = 'block';
+}
+
+function showTagsList() {
+  document.getElementById('tagItemsView').style.display = 'none';
+  document.getElementById('tagsListView').style.display = 'block';
 }
 
 // Remove a tag from selected tags

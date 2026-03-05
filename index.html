@@ -88,8 +88,17 @@
 
             <!-- Tags page -->
             <div id="page-tags" class="page" style="display: none;">
-                <div id="tagsPanel" class="tags-panel">
-                    <!-- Tags will be loaded here -->
+                <!-- Tags list view -->
+                <div id="tagsListView">
+                    <div id="tagsPanel" class="tags-panel">
+                        <!-- Tags will be loaded here -->
+                    </div>
+                </div>
+                <!-- Tag items view -->
+                <div id="tagItemsView" style="display: none;">
+                    <button class="back-btn" onclick="showTagsList()">&#8592; Back to Tags</button>
+                    <h2 id="tagItemsTitle" class="tag-items-heading"></h2>
+                    <div id="tagItemsList" class="tag-items-list"></div>
                 </div>
             </div>
         </main>

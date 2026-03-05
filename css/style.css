@@ -261,6 +261,32 @@ main {
     color: var(--primary-color);
 }
 
+/* Back button */
+.back-btn {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.5rem 0;
+    margin-bottom: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: opacity 0.2s;
+}
+
+.back-btn:hover {
+    opacity: 0.75;
+}
+
+.tag-items-heading {
+    color: var(--text-color);
+    margin-bottom: 1rem;
+    font-size: 1.4rem;
+}
+
 /* Tags panel */
 .tags-panel {
     padding: 0.5rem 0;
