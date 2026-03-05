@@ -14,7 +14,6 @@ if ('serviceWorker' in navigator) {
 
 // Application initialization
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('Double J Menu app loaded');
   loadMenuItems();
   initializeForm();
   initialiseHamburger();
@@ -79,9 +78,7 @@ function initializeForm() {
   });
   
   addItemForm.addEventListener('submit', (e) => {
-    console.log('Form submit event triggered!');
     e.preventDefault();
-    console.log('Default prevented, calling addMenuItem()');
     addMenuItem();
   });
 }
@@ -105,17 +102,16 @@ function initialiseHamburger() {
 
   btn.addEventListener('click', (e) => {
     e.stopPropagation();
-    const isOpen = dropdown.style.display === 'block';
-    dropdown.style.display = isOpen ? 'none' : 'block';
+    dropdown.classList.toggle('open');
   });
 
   document.addEventListener('click', () => {
-    dropdown.style.display = 'none';
+    dropdown.classList.remove('open');
   });
 }
 
 function closeNav() {
-  document.getElementById('navDropdown').style.display = 'none';
+  document.getElementById('navDropdown').classList.remove('open');
 }
 
 function navigateTo(page) {
@@ -172,12 +168,21 @@ function selectTagFilter(tag) {
     </div>`).join('');
   document.getElementById('tagsListView').style.display = 'none';
   document.getElementById('tagItemsView').style.display = 'block';
+  history.pushState({ tagView: tag }, '', `#tags/${encodeURIComponent(tag)}`);
 }
 
 function showTagsList() {
   document.getElementById('tagItemsView').style.display = 'none';
   document.getElementById('tagsListView').style.display = 'block';
 }
+
+window.addEventListener('popstate', () => {
+  if (window.location.hash.startsWith('#tags/')) {
+    // pushed into a tag view — nothing to do, forward nav handles it
+  } else if (window.location.hash === '#tags') {
+    showTagsList();
+  }
+});
 
 // Remove a tag from selected tags
 function removeTag(tag) {
@@ -237,17 +242,11 @@ async function loadMenuItems() {
   menuContainer.innerHTML = '<p class="loading">Loading menu items...</p>';
   
   try {
-    console.log('Starting to load menu items...');
-    
-    // Check if Supabase is loaded
     if (typeof supabase === 'undefined') {
       throw new Error('Supabase client not loaded');
     }
-    
-    // Get items from Supabase
+
     const menuItems = await db.getMenuItems();
-    
-    console.log('Menu items loaded:', menuItems);
     
     // Clear loading message
     menuContainer.innerHTML = '';
@@ -270,9 +269,7 @@ async function loadMenuItems() {
 
 // Subscribe to real-time updates
 function subscribeToRealtimeUpdates() {
-  db.subscribeToChanges((payload) => {
-    console.log('Real-time update:', payload);
-    // Reload items when changes occur
+  db.subscribeToChanges(() => {
     loadMenuItems();
   });
 }
@@ -283,10 +280,8 @@ async function addMenuItem() {
   const description = document.getElementById('itemDescription').value.trim();
   const editingItemId = document.getElementById('editingItemId').value;
   
-  console.log('Form submitted:', { name, description, tags: window.selectedTags, editingItemId });
-  
   if (!name || window.selectedTags.length === 0) {
-    alert('Please fill in all required fields and add at least one tag');
+    showNotification('Please fill in the item name and add at least one tag.', 'error');
     return;
   }
   
@@ -296,17 +291,11 @@ async function addMenuItem() {
     tags: window.selectedTags
   };
   
-  console.log('Item data:', itemData);
-  
   try {
     if (editingItemId) {
-      // Update existing item
-      console.log('Updating item ID:', editingItemId);
       await db.updateMenuItem(parseInt(editingItemId), itemData);
       showNotification('Item updated successfully!', 'success');
     } else {
-      // Add new item
-      console.log('Adding new item');
       await db.addMenuItem(itemData);
       showNotification('Item added successfully!', 'success');
     }
@@ -321,8 +310,6 @@ async function addMenuItem() {
     window.selectedTags = [];
     updateSelectedTagsDisplay();
     
-    // Reload items
-    console.log('Reloading menu items...');
     await loadMenuItems();
   } catch (error) {
     console.error('Error saving item:', error);
@@ -333,12 +320,9 @@ async function addMenuItem() {
 // Edit menu item
 async function editMenuItem(id) {
   try {
-    console.log('Editing item with ID:', id);
     const items = await db.getMenuItems();
     const item = items.find(i => i.id === id);
-    
-    console.log('Found item:', item);
-    
+
     if (!item) {
       showNotification('Item not found', 'error');
       return;
@@ -349,12 +333,9 @@ async function editMenuItem(id) {
     document.getElementById('itemDescription').value = item.description || '';
     document.getElementById('editingItemId').value = id;
     
-    // Populate tags
     window.selectedTags = item.tags || [];
     updateSelectedTagsDisplay();
-    
-    console.log('Form populated with tags:', item.tags);
-    
+
     // Update form UI
     document.getElementById('formTitle').textContent = 'Edit Menu Item';
     document.getElementById('submitBtn').textContent = 'Update Item';
@@ -372,12 +353,20 @@ async function editMenuItem(id) {
   }
 }
 
-// Delete menu item
-async function deleteMenuItem(id) {
-  if (!confirm('Are you sure you want to delete this item?')) {
+// Delete menu item — requires a second tap to confirm
+async function deleteMenuItem(id, btn) {
+  if (!btn.dataset.confirmPending) {
+    btn.dataset.confirmPending = 'true';
+    btn.textContent = '?';
+    btn.title = 'Tap again to confirm delete';
+    setTimeout(() => {
+      btn.dataset.confirmPending = '';
+      btn.textContent = '×';
+      btn.title = 'Delete item';
+    }, 2500);
     return;
   }
-  
+
   try {
     await db.deleteMenuItem(id);
     await loadMenuItems();
@@ -408,7 +397,7 @@ function createMenuItem(item) {
     </div>
     <div class="item-actions">
       <button class="edit-btn" onclick="editMenuItem(${item.id})" title="Edit item">✎</button>
-      <button class="delete-btn" onclick="deleteMenuItem(${item.id})" title="Delete item">×</button>
+      <button class="delete-btn" onclick="deleteMenuItem(${item.id}, this)" title="Delete item">×</button>
     </div>
   `;
   return div;
