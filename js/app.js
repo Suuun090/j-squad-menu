@@ -405,7 +405,7 @@ function createMenuItem(item) {
   const div = document.createElement('div');
   div.className = 'menu-item';
   const tags = item.tags && item.tags.length > 0
-    ? item.tags.map(tag => `<span class="item-tag">${escapeHtml(tag)}</span>`).join('')
+    ? `<div class="item-tags">${item.tags.map(tag => `<span class="item-tag">${escapeHtml(tag)}</span>`).join('')}</div>`
     : '';
   const hasDescription = item.description && item.description.trim();
 

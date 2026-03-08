@@ -335,6 +335,9 @@ main {
 }
 
 .tag-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
     margin-bottom: 1.25rem;
 }
 
@@ -346,7 +349,7 @@ main {
     border: 1px solid #e8e8e8;
     border-radius: 20px;
     padding: 0.25rem 0.7rem;
-    margin: 0.45rem;
+    margin: 0;
     box-shadow: var(--shadow);
     font-size: 0.9rem;
     color: var(--text-color);
@@ -415,15 +418,21 @@ main {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+.item-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 0.6rem;
+}
+
 .item-tag {
     display: inline-block;
     background-color: var(--primary-color);
     color: white;
-    padding: 0.25rem 0.75rem;
+    padding: 0.2rem 0.65rem;
     border-radius: 12px;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-weight: 600;
-    margin-bottom: 0.5rem;
 }
 
 .item-name-row {

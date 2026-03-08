@@ -313,24 +313,207 @@ async function showOrderSummary() {
     : '<p class="no-items">No items selected yet.</p>';
 }
 
-async function shareOrderSummary() {
-  const text = buildOrderSummaryText();
-  const title = `Order ${orderState.currentOrder.order_number}`;
+function generateOrderPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
 
-  if (navigator.share) {
+  const W = 210;
+  const margin = 16;
+  const cW = W - margin * 2; // content width
+
+  // Palette
+  const blue    = [ 80, 170, 210];
+  const blueLt  = [137, 207, 240];
+  const bluePl  = [218, 240, 252];
+  const dark    = [ 44,  44,  62];
+  const muted   = [120, 120, 140];
+  const white   = [255, 255, 255];
+  const rowAlt  = [245, 251, 255];
+
+  // ── HEADER ────────────────────────────────────────────────
+  // Deep blue base
+  doc.setFillColor(...blue);
+  doc.rect(0, 0, W, 52, 'F');
+
+  // Lighter blue bottom strip
+  doc.setFillColor(...blueLt);
+  doc.rect(0, 42, W, 10, 'F');
+
+  // Decorative circles top-right
+  doc.setFillColor(100, 190, 230);
+  doc.circle(W + 2, -8, 38, 'F');
+  doc.setFillColor(90, 180, 220);
+  doc.circle(W - 8, 18, 20, 'F');
+
+  // App title
+  doc.setTextColor(...white);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(23);
+  doc.text('Double J Menu', margin, 21);
+
+  // Tagline
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(9);
+  doc.setTextColor(210, 238, 255);
+  doc.text('a product of love', margin, 29);
+
+  // Order number
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(...white);
+  doc.text(`Order  ${orderState.currentOrder.order_number}`, margin, 46);
+
+  // Date top-right
+  const dateStr = new Date().toLocaleDateString('en-GB', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(200, 232, 255);
+  doc.text(dateStr, W - margin, 46, { align: 'right' });
+
+  // ── STATS BAR ─────────────────────────────────────────────
+  doc.setFillColor(...bluePl);
+  doc.rect(0, 52, W, 15, 'F');
+
+  const personItems  = buildPersonItems();
+  const peopleCount  = Object.keys(personItems).length;
+  const totalItems   = Object.values(personItems).reduce((s, a) => s + a.length, 0);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9.5);
+  doc.setTextColor(...muted);
+  doc.text(
+    `${peopleCount} ${peopleCount === 1 ? 'person' : 'people'}   ·   ${totalItems} ${totalItems === 1 ? 'item' : 'items'} total`,
+    margin, 62
+  );
+
+  // ── PERSON SECTIONS ───────────────────────────────────────
+  let y = 78;
+
+  Object.entries(personItems).forEach(([person, items]) => {
+    if (y > 245) { doc.addPage(); y = 20; }
+
+    // Person header bar
+    doc.setFillColor(...blueLt);
+    doc.roundedRect(margin, y, cW, 10, 2.5, 2.5, 'F');
+
+    // Avatar circle
+    doc.setFillColor(...blue);
+    doc.circle(margin + 6, y + 5, 3.8, 'F');
+    doc.setTextColor(...white);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text(person.charAt(0).toUpperCase(), margin + 6, y + 6.1, { align: 'center' });
+
+    // Person name
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...dark);
+    doc.text(person, margin + 13, y + 6.8);
+
+    // Item count badge (right)
+    const badge = `${items.length} item${items.length !== 1 ? 's' : ''}`;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...blue);
+    doc.text(badge, W - margin - 1, y + 6.8, { align: 'right' });
+
+    y += 13;
+
+    // Items
+    items.forEach((name, i) => {
+      if (y > 272) { doc.addPage(); y = 20; }
+
+      // Alternating row background
+      if (i % 2 === 0) {
+        doc.setFillColor(...rowAlt);
+        doc.rect(margin, y - 1.5, cW, 8.5, 'F');
+      }
+
+      // Bullet dot
+      doc.setFillColor(...blueLt);
+      doc.circle(margin + 3.5, y + 3, 1.4, 'F');
+
+      // Item name
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10.5);
+      doc.setTextColor(...dark);
+      doc.text(name, margin + 9, y + 5);
+
+      y += 9.5;
+    });
+
+    y += 7;
+  });
+
+  // ── FOOTER ────────────────────────────────────────────────
+  const fY = Math.max(y + 4, 260);
+
+  // Decorative rule
+  doc.setDrawColor(...blueLt);
+  doc.setLineWidth(0.5);
+  doc.line(margin, fY, W - margin, fY);
+
+  // Diamond accent on rule centre
+  doc.setFillColor(...blueLt);
+  const cx = W / 2;
+  // Rotate a square 45° by drawing two triangles
+  doc.triangle(cx, fY - 2.2, cx + 2.2, fY, cx, fY + 2.2, 'F');
+  doc.triangle(cx, fY - 2.2, cx - 2.2, fY, cx, fY + 2.2, 'F');
+
+  // Wish message
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(12);
+  doc.setTextColor(...dark);
+  doc.text('Wish you have a good time ~', cx, fY + 11, { align: 'center' });
+
+  // Signature
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(...muted);
+  doc.text('— love from Juan & Jinjin', cx, fY + 19, { align: 'center' });
+
+  // Three dot accents
+  doc.setFillColor(...blueLt);
+  [-20, 0, 20].forEach(offset => doc.circle(cx + offset, fY + 26, 1.3, 'F'));
+
+  return doc.output('blob');
+}
+
+async function shareOrderSummary() {
+  showNotification('Generating PDF…', 'info');
+
+  let pdfBlob;
+  try {
+    pdfBlob = generateOrderPDF();
+  } catch (e) {
+    console.error('PDF generation failed:', e);
+    showNotification('Could not generate PDF.', 'error');
+    return;
+  }
+
+  const filename = `order-${orderState.currentOrder.order_number}.pdf`;
+  const file = new File([pdfBlob], filename, { type: 'application/pdf' });
+
+  // Try native share with file (works on iOS/Android)
+  if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
-      await navigator.share({ title, text });
+      await navigator.share({ title: `Order ${orderState.currentOrder.order_number}`, files: [file] });
+      return;
     } catch (e) {
-      if (e.name !== 'AbortError') showNotification('Could not share.', 'error');
-    }
-  } else {
-    try {
-      await navigator.clipboard.writeText(text);
-      showNotification('Order copied to clipboard!', 'success');
-    } catch (e) {
-      showNotification('Could not copy to clipboard.', 'error');
+      if (e.name === 'AbortError') return;
+      // Fall through to download
     }
   }
+
+  // Fallback: download the PDF
+  const url = URL.createObjectURL(pdfBlob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
 }
 
 function backToActiveOrder() {
