@@ -32,14 +32,10 @@
 }
 
 body {
-    font-family: 'DM Sans', 'Noto Serif SC', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     line-height: 1.6;
     color: var(--text-color);
     background-color: var(--background-color);
-}
-
-h1, h2, h3 {
-    font-family: 'Playfair Display', 'Noto Serif SC', serif;
 }
 
 #app {
