@@ -1,0 +1,68 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - '**'
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Deploy main branch to GitHub Pages (production)
+  deploy-production:
+    name: Deploy (production)
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  # Deploy feature branches to a subfolder on gh-pages branch (preview)
+  deploy-preview:
+    name: Deploy (preview)
+    if: github.ref != 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Sanitise branch name
+        id: branch
+        run: |
+          BRANCH_NAME="${GITHUB_REF_NAME}"
+          # Replace slashes and special chars with hyphens
+          SAFE_NAME=$(echo "$BRANCH_NAME" | sed 's/[^a-zA-Z0-9._-]/-/g')
+          echo "safe_name=$SAFE_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy preview to gh-pages branch
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: .
+          target-folder: previews/${{ steps.branch.outputs.safe_name }}
+          clean: true
+          commit-message: "Deploy preview for branch ${{ github.ref_name }} @ ${{ github.sha }}"
