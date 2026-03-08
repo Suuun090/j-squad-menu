@@ -33,6 +33,22 @@ function initialiseRouter() {
     document.getElementById('page-tags').style.display = page === 'tags' ? 'block' : 'none';
     document.getElementById('page-order').style.display = page === 'order' ? 'block' : 'none';
 
+    // Install button only on menu page
+    const installBtn = document.getElementById('installBtn');
+    if (page !== 'menu') {
+      installBtn.dataset.hiddenByRouter = 'true';
+      installBtn.style.display = 'none';
+    } else {
+      delete installBtn.dataset.hiddenByRouter;
+      // Restore visibility if install is available
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+        || window.navigator.standalone === true;
+      if (!isStandalone && (isIOS || window._installPromptAvailable)) {
+        installBtn.style.display = 'flex';
+      }
+    }
+
     if (page === 'tags') loadTagsPanel();
     if (page === 'order') initOrderPage();
   }

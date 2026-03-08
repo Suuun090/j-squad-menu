@@ -64,15 +64,20 @@ header h1 {
     background-color: white;
     color: var(--primary-color);
     border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
     cursor: pointer;
-    font-weight: 600;
-    transition: transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s, background-color 0.2s;
+    flex-shrink: 0;
 }
 
 .install-button:hover {
-    transform: scale(1.05);
+    transform: scale(1.1);
+    background-color: #e8f5ff;
 }
 
 /* Main content */
@@ -340,8 +345,8 @@ main {
     background-color: var(--card-background);
     border: 1px solid #e8e8e8;
     border-radius: 20px;
-    padding: 0.4rem 1rem;
-    margin: 0.3rem;
+    padding: 0.25rem 0.7rem;
+    margin: 0.45rem;
     box-shadow: var(--shadow);
     font-size: 0.9rem;
     color: var(--text-color);
@@ -566,6 +571,44 @@ main {
 
 .notification-info {
     background-color: var(--primary-color);
+}
+
+/* iOS install tip */
+.ios-install-tip {
+    position: fixed;
+    bottom: calc(1.25rem + env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text-color);
+    color: white;
+    border-radius: var(--radius-md);
+    padding: 0.85rem 1.1rem;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    max-width: 280px;
+    width: calc(100vw - 2rem);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    z-index: 200;
+    text-align: center;
+}
+
+.ios-install-tip strong {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-size: 0.95rem;
+}
+
+.ios-tip-close {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.6rem;
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.6);
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
 }
 
 /* Order number badge in header */

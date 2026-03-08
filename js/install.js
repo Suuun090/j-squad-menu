@@ -2,47 +2,66 @@
 let deferredPrompt;
 const installBtn = document.getElementById('installBtn');
 
-// Listen for beforeinstallprompt event
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+  || window.navigator.standalone === true;
+
+// On iOS the beforeinstallprompt event never fires — show the button manually
+if (isIOS && !isStandalone) {
+  installBtn.style.display = 'flex';
+}
+
+// On Android / desktop Chrome — show when the browser signals it's installable
 window.addEventListener('beforeinstallprompt', (e) => {
-  // Prevent the mini-infobar from appearing
   e.preventDefault();
-  // Save the event for later use
   deferredPrompt = e;
-  // Show the install button
-  installBtn.style.display = 'block';
-  
-  console.log('Install prompt available');
+  window._installPromptAvailable = true;
+  installBtn.style.display = 'flex';
 });
 
-// Handle install button click
 installBtn.addEventListener('click', async () => {
-  if (!deferredPrompt) {
+  if (isIOS) {
+    showIOSInstallTip();
     return;
   }
-  
-  // Show the install prompt
+  if (!deferredPrompt) return;
   deferredPrompt.prompt();
-  
-  // Wait for the user's response
   const { outcome } = await deferredPrompt.userChoice;
-  console.log(`User response to install prompt: ${outcome}`);
-  
-  // Clear the deferred prompt
+  console.log(`Install prompt outcome: ${outcome}`);
   deferredPrompt = null;
-  
-  // Hide the install button
   installBtn.style.display = 'none';
 });
 
-// Listen for app installed event
 window.addEventListener('appinstalled', () => {
-  console.log('PWA installed successfully');
   deferredPrompt = null;
   installBtn.style.display = 'none';
 });
 
-// Check if app is already installed
-if (window.matchMedia('(display-mode: standalone)').matches) {
-  console.log('App is running in standalone mode');
+if (isStandalone) {
   installBtn.style.display = 'none';
+}
+
+function showIOSInstallTip() {
+  // Remove any existing tip
+  const existing = document.getElementById('iosTip');
+  if (existing) { existing.remove(); return; }
+
+  const tip = document.createElement('div');
+  tip.id = 'iosTip';
+  tip.className = 'ios-install-tip';
+  tip.innerHTML = `
+    <strong>Add to Home Screen</strong>
+    <p>Tap the <strong>Share</strong> button
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle">
+        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+        <polyline points="16 6 12 2 8 6"/>
+        <line x1="12" y1="2" x2="12" y2="15"/>
+      </svg>
+      then <strong>"Add to Home Screen"</strong></p>
+    <button class="ios-tip-close" onclick="document.getElementById('iosTip').remove()">✕</button>
+  `;
+  document.body.appendChild(tip);
+
+  // Auto-dismiss after 6 seconds
+  setTimeout(() => tip.remove(), 6000);
 }
