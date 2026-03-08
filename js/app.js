@@ -24,10 +24,17 @@ document.addEventListener('DOMContentLoaded', () => {
 // Router
 function initialiseRouter() {
   function navigate() {
-    const page = window.location.hash === '#tags' ? 'tags' : 'menu';
+    const hash = window.location.hash;
+    let page = 'menu';
+    if (hash === '#tags' || hash.startsWith('#tags/')) page = 'tags';
+    if (hash === '#order') page = 'order';
+
     document.getElementById('page-menu').style.display = page === 'menu' ? 'block' : 'none';
     document.getElementById('page-tags').style.display = page === 'tags' ? 'block' : 'none';
+    document.getElementById('page-order').style.display = page === 'order' ? 'block' : 'none';
+
     if (page === 'tags') loadTagsPanel();
+    if (page === 'order') initOrderPage();
   }
   window.addEventListener('hashchange', navigate);
   navigate();

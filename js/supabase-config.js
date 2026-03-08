@@ -96,6 +96,71 @@ const db = {
     }
   },
 
+  // Create a new order
+  async createOrder(orderNumber) {
+    const { data, error } = await supabaseClient
+      .from('orders')
+      .insert([{ order_number: orderNumber, status: 'open' }])
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  // Get order by number
+  async getOrderByNumber(orderNumber) {
+    const { data, error } = await supabaseClient
+      .from('orders')
+      .select('*')
+      .eq('order_number', orderNumber)
+      .single();
+    if (error && error.code === 'PGRST116') return null;
+    if (error) throw error;
+    return data;
+  },
+
+  // Get all selections for an order
+  async getOrderSelections(orderId) {
+    const { data, error } = await supabaseClient
+      .from('order_selections')
+      .select('*')
+      .eq('order_id', orderId);
+    if (error) throw error;
+    return data || [];
+  },
+
+  // Add a selection
+  async addOrderSelection(orderId, menuItemId, personName) {
+    const { error } = await supabaseClient
+      .from('order_selections')
+      .insert([{ order_id: orderId, menu_item_id: menuItemId, person_name: personName }]);
+    if (error) throw error;
+  },
+
+  // Remove a selection
+  async removeOrderSelection(orderId, menuItemId, personName) {
+    const { error } = await supabaseClient
+      .from('order_selections')
+      .delete()
+      .eq('order_id', orderId)
+      .eq('menu_item_id', menuItemId)
+      .eq('person_name', personName);
+    if (error) throw error;
+  },
+
+  // Subscribe to order selection changes
+  subscribeToOrderSelections(orderId, callback) {
+    return supabaseClient
+      .channel(`order_selections_${orderId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'order_selections',
+        filter: `order_id=eq.${orderId}`,
+      }, callback)
+      .subscribe();
+  },
+
   // Subscribe to real-time changes
   subscribeToChanges(callback) {
     const channel = supabaseClient

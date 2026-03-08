@@ -568,6 +568,282 @@ main {
     background-color: var(--primary-color);
 }
 
+/* Order number badge in header */
+.order-number-badge {
+    background-color: white;
+    color: var(--primary-color);
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.3rem 0.75rem;
+    border-radius: var(--radius-pill);
+    letter-spacing: 0.04em;
+    margin-right: 0.5rem;
+}
+
+/* Order landing */
+.order-landing-card {
+    max-width: 420px;
+    margin: 3rem auto;
+    background: var(--card-background);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+}
+
+.order-landing-title {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+}
+
+.order-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1.5rem 0;
+    color: var(--text-subtle);
+    font-size: 0.85rem;
+}
+
+.order-divider::before,
+.order-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+}
+
+.order-join-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.order-join-row input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    font-family: inherit;
+    transition: border-color 0.2s;
+}
+
+.order-join-row input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.btn-join {
+    background-color: var(--text-color);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+}
+
+.btn-join:hover {
+    opacity: 0.8;
+}
+
+/* Tag filter pills in order page */
+.order-tag-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1.25rem;
+}
+
+.order-tag-pill {
+    background: var(--card-background);
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-pill);
+    padding: 0.35rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text-color);
+    transition: all 0.15s;
+}
+
+.order-tag-pill:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.order-tag-pill.active {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+/* Order items list */
+.order-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding-bottom: 7rem; /* space for fixed footer */
+}
+
+.order-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--card-background);
+    border-radius: var(--radius-md);
+    padding: 0.9rem 1.1rem;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: box-shadow 0.15s, transform 0.1s;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.order-item:active {
+    transform: scale(0.99);
+}
+
+.order-item.selected {
+    box-shadow: 0 0 0 2px var(--primary-color), var(--shadow);
+}
+
+/* Fillable circle */
+.order-circle {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
+    flex-shrink: 0;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.order-circle.filled {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.order-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.order-item-name {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.order-item-others {
+    font-size: 0.8rem;
+    color: var(--text-subtle);
+}
+
+/* Fixed footer with Finish / Leave buttons */
+.order-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--card-background);
+    border-top: 1px solid var(--border-color);
+    padding: 1rem 2rem calc(1rem + env(safe-area-inset-bottom));
+    display: flex;
+    gap: 0.75rem;
+    z-index: 50;
+}
+
+.finish-order-btn {
+    flex: 1;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.85rem;
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.finish-order-btn:hover {
+    background-color: var(--secondary-color);
+}
+
+.leave-order-btn {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+    padding: 0.85rem 1.25rem;
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.leave-order-btn:hover {
+    color: var(--text-color);
+}
+
+/* Order summary */
+.order-summary-title {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+}
+
+.order-summary-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.summary-person {
+    background: var(--card-background);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.25rem;
+    box-shadow: var(--shadow);
+}
+
+.summary-person h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.summary-person ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.summary-person li::before {
+    content: '• ';
+    color: var(--primary-color);
+}
+
+.order-summary-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.order-email-btn {
+    flex: 1;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-sm);
+}
+
 /* Footer */
 footer {
     background-color: var(--text-color);

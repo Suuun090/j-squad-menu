@@ -34,10 +34,12 @@
                 <div id="navDropdown" class="nav-dropdown">
                     <a href="#menu" class="nav-link" onclick="navigateTo('menu'); return false;">Menu</a>
                     <a href="#tags" class="nav-link" onclick="navigateTo('tags'); return false;">Tags</a>
+                    <a href="#order" class="nav-link" onclick="navigateTo('order'); return false;">Order</a>
                 </div>
             </div>
             <h1>Double J Menu</h1>
             <nav>
+                <span id="orderNumberBadge" class="order-number-badge" style="display: none;"></span>
                 <button id="installBtn" class="install-button" style="display: none;">Install App</button>
             </nav>
         </header>
@@ -88,6 +90,53 @@
                 </div>
             </div>
 
+            <!-- Order page -->
+            <div id="page-order" class="page" style="display: none;">
+
+                <!-- Landing: create or join -->
+                <div id="orderLanding">
+                    <div class="order-landing-card">
+                        <h2 class="order-landing-title">Place an Order</h2>
+
+                        <div class="form-group">
+                            <label for="orderPersonName">Your Name</label>
+                            <input type="text" id="orderPersonName" placeholder="Enter your name" autocomplete="name">
+                        </div>
+
+                        <button class="toggle-form-btn" onclick="createOrder()">Start New Order</button>
+
+                        <div class="order-divider"><span>or join an existing order</span></div>
+
+                        <div class="order-join-row">
+                            <input type="text" id="joinOrderInput" placeholder="Order number (e.g. JJ-4821)"
+                                autocomplete="off" autocorrect="off" autocapitalize="characters"
+                                onkeydown="if(event.key==='Enter') joinOrder()">
+                            <button class="btn-join" onclick="joinOrder()">Join</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active order -->
+                <div id="orderActive" style="display: none;">
+                    <div id="orderTagFilter" class="order-tag-filter"></div>
+                    <div id="orderItemsList" class="order-items-list"></div>
+                    <div class="order-footer">
+                        <button class="finish-order-btn" onclick="showOrderSummary()">Finish Order</button>
+                        <button class="leave-order-btn" onclick="leaveOrder()">Leave Order</button>
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div id="orderSummary" style="display: none;">
+                    <h2 class="order-summary-title">Order Summary</h2>
+                    <div id="orderSummaryContent" class="order-summary-content"></div>
+                    <div class="order-summary-actions">
+                        <a id="emailOrderBtn" class="btn-submit order-email-btn" href="#">Send via Email</a>
+                        <button class="btn-cancel" onclick="backToActiveOrder()">Back to Order</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Tags page -->
             <div id="page-tags" class="page" style="display: none;">
                 <!-- Tags list view -->
@@ -114,6 +163,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/order.js"></script>
     <script src="js/install.js"></script>
 </body>
 </html>
