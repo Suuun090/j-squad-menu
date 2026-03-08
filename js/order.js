@@ -42,6 +42,11 @@ function showOrderBadge(number) {
   }
 }
 
+function updateOrderNameCounter(input) {
+  const remaining = 20 - input.value.length;
+  document.getElementById('orderNameCounter').textContent = remaining;
+}
+
 async function createOrder() {
   const name = document.getElementById('orderPersonName').value.trim();
   if (!name) {
@@ -50,7 +55,10 @@ async function createOrder() {
   }
   orderState.personName = name;
 
-  const orderNumber = 'JJ-' + Math.floor(1000 + Math.random() * 9000);
+  const customName = document.getElementById('orderCustomName').value.trim();
+  const orderNumber = customName
+    ? customName.toUpperCase().replace(/\s+/g, '-').slice(0, 20)
+    : 'JJ-' + Math.floor(1000 + Math.random() * 9000);
 
   try {
     const order = await db.createOrder(orderNumber);
@@ -59,10 +67,16 @@ async function createOrder() {
     orderState.allSelections = {};
     orderState.activeTagFilter = null;
     showActiveOrder();
-    showNotification(`Order ${orderNumber} created!`, 'success');
+    showNotification(`Order "${orderNumber}" created!`, 'success');
   } catch (e) {
-    console.error('Error creating order:', e);
-    showNotification('Failed to create order. Please try again.', 'error');
+    console.error('Error creating order:', e.message, e);
+    const isDuplicate = e.message && e.message.includes('duplicate');
+    showNotification(
+      isDuplicate
+        ? `An order named "${orderNumber}" already exists. Try a different name.`
+        : `Failed to create order: ${e.message}`,
+      'error'
+    );
   }
 }
 
@@ -247,11 +261,7 @@ function subscribeToOrderChanges() {
   );
 }
 
-function showOrderSummary() {
-  document.getElementById('orderActive').style.display = 'none';
-  document.getElementById('orderSummary').style.display = 'block';
-
-  // Group selected items by person
+function buildPersonItems() {
   const personItems = {};
   Object.entries(orderState.allSelections).forEach(([itemId, persons]) => {
     const item = orderState.allItems.find(i => i.id === parseInt(itemId));
@@ -261,10 +271,39 @@ function showOrderSummary() {
       personItems[person].push(item.name);
     });
   });
+  return personItems;
+}
 
+function buildOrderSummaryText() {
+  const personItems = buildPersonItems();
+  let text = `Order: ${orderState.currentOrder.order_number}\n\n`;
+  if (Object.keys(personItems).length === 0) {
+    text += 'No items selected.';
+  } else {
+    Object.entries(personItems).forEach(([person, items]) => {
+      text += `${person}:\n`;
+      items.forEach(n => (text += `  • ${n}\n`));
+      text += '\n';
+    });
+  }
+  return text.trim();
+}
+
+async function showOrderSummary() {
+  document.getElementById('orderActive').style.display = 'none';
+  document.getElementById('orderSummary').style.display = 'block';
+
+  // Close the order in Supabase
+  try {
+    await db.closeOrder(orderState.currentOrder.id);
+  } catch (e) {
+    console.error('Failed to close order:', e);
+  }
+
+  const personItems = buildPersonItems();
   const hasSomething = Object.keys(personItems).length > 0;
 
-  const summaryHtml = hasSomething
+  document.getElementById('orderSummaryContent').innerHTML = hasSomething
     ? Object.entries(personItems).map(([person, items]) => `
         <div class="summary-person">
           <h3>${escapeHtml(person)}</h3>
@@ -272,24 +311,26 @@ function showOrderSummary() {
         </div>
       `).join('')
     : '<p class="no-items">No items selected yet.</p>';
+}
 
-  document.getElementById('orderSummaryContent').innerHTML = summaryHtml;
+async function shareOrderSummary() {
+  const text = buildOrderSummaryText();
+  const title = `Order ${orderState.currentOrder.order_number}`;
 
-  // Build mailto link
-  const subject = `Order ${orderState.currentOrder.order_number}`;
-  let body = `Order Number: ${orderState.currentOrder.order_number}\n\n`;
-  if (hasSomething) {
-    Object.entries(personItems).forEach(([person, items]) => {
-      body += `${person}:\n`;
-      items.forEach(n => (body += `  - ${n}\n`));
-      body += '\n';
-    });
+  if (navigator.share) {
+    try {
+      await navigator.share({ title, text });
+    } catch (e) {
+      if (e.name !== 'AbortError') showNotification('Could not share.', 'error');
+    }
   } else {
-    body += 'No items selected.';
+    try {
+      await navigator.clipboard.writeText(text);
+      showNotification('Order copied to clipboard!', 'success');
+    } catch (e) {
+      showNotification('Could not copy to clipboard.', 'error');
+    }
   }
-
-  const mailto = `mailto:suuunyychen@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  document.getElementById('emailOrderBtn').href = mailto;
 }
 
 function backToActiveOrder() {

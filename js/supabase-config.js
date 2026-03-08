@@ -148,6 +148,15 @@ const db = {
     if (error) throw error;
   },
 
+  // Close an order
+  async closeOrder(orderId) {
+    const { error } = await supabaseClient
+      .from('orders')
+      .update({ status: 'closed' })
+      .eq('id', orderId);
+    if (error) throw error;
+  },
+
   // Subscribe to order selection changes
   subscribeToOrderSelections(orderId, callback) {
     return supabaseClient

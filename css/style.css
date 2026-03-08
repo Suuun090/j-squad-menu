@@ -596,6 +596,23 @@ main {
     margin-bottom: 1.5rem;
 }
 
+.label-optional {
+    font-weight: 400;
+    color: var(--text-subtle);
+    font-size: 0.85rem;
+}
+
+.order-name-hint {
+    margin-top: 0.35rem;
+    font-size: 0.78rem;
+    color: var(--text-subtle);
+}
+
+.order-name-counter {
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
 .order-divider {
     display: flex;
     align-items: center;

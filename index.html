@@ -100,7 +100,17 @@
 
                         <div class="form-group">
                             <label for="orderPersonName">Your Name</label>
-                            <input type="text" id="orderPersonName" placeholder="Enter your name" autocomplete="name">
+                            <input type="text" id="orderPersonName" placeholder="Enter your name" autocomplete="name" maxlength="30">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="orderCustomName">Order Name <span class="label-optional">(optional)</span></label>
+                            <input type="text" id="orderCustomName" placeholder="e.g. Sunday Dinner"
+                                maxlength="20" autocomplete="off" autocorrect="off"
+                                oninput="updateOrderNameCounter(this)">
+                            <div class="order-name-hint">
+                                <span id="orderNameCounter" class="order-name-counter">20</span> chars left · leave blank for a random code
+                            </div>
                         </div>
 
                         <button class="toggle-form-btn" onclick="createOrder()">Start New Order</button>
@@ -131,7 +141,7 @@
                     <h2 class="order-summary-title">Order Summary</h2>
                     <div id="orderSummaryContent" class="order-summary-content"></div>
                     <div class="order-summary-actions">
-                        <a id="emailOrderBtn" class="btn-submit order-email-btn" href="#">Send via Email</a>
+                        <button class="finish-order-btn" onclick="shareOrderSummary()">Share Order</button>
                         <button class="btn-cancel" onclick="backToActiveOrder()">Back to Order</button>
                     </div>
                 </div>
