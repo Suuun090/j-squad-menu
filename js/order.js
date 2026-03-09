@@ -481,6 +481,20 @@ function generateOrderPDF() {
   return doc.output('blob');
 }
 
+function previewOrderPDF() {
+  let pdfBlob;
+  try {
+    pdfBlob = generateOrderPDF();
+  } catch (e) {
+    console.error('PDF preview failed:', e);
+    showNotification('Could not generate preview.', 'error');
+    return;
+  }
+  const url = URL.createObjectURL(pdfBlob);
+  window.open(url, '_blank');
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+}
+
 async function shareOrderSummary() {
   showNotification('Generating PDF…', 'info');
 
