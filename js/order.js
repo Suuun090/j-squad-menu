@@ -313,178 +313,168 @@ async function showOrderSummary() {
     : '<p class="no-items">No items selected yet.</p>';
 }
 
-function generateOrderPDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-
-  const W = 210;
-  const margin = 16;
-  const cW = W - margin * 2; // content width
-
-  // Palette
-  const blue    = [ 80, 170, 210];
-  const blueLt  = [137, 207, 240];
-  const bluePl  = [218, 240, 252];
-  const dark    = [ 44,  44,  62];
-  const muted   = [120, 120, 140];
-  const white   = [255, 255, 255];
-  const rowAlt  = [245, 251, 255];
-
-  // ── HEADER ────────────────────────────────────────────────
-  // Deep blue base
-  doc.setFillColor(...blue);
-  doc.rect(0, 0, W, 52, 'F');
-
-  // Lighter blue bottom strip
-  doc.setFillColor(...blueLt);
-  doc.rect(0, 42, W, 10, 'F');
-
-  // Decorative circles top-right
-  doc.setFillColor(100, 190, 230);
-  doc.circle(W + 2, -8, 38, 'F');
-  doc.setFillColor(90, 180, 220);
-  doc.circle(W - 8, 18, 20, 'F');
-
-  // App title
-  doc.setTextColor(...white);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(23);
-  doc.text('Double J Menu', margin, 21);
-
-  // Tagline
-  doc.setFont('helvetica', 'italic');
-  doc.setFontSize(9);
-  doc.setTextColor(210, 238, 255);
-  doc.text('a product of love', margin, 29);
-
-  // Order number
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(12);
-  doc.setTextColor(...white);
-  doc.text(`Order  ${orderState.currentOrder.order_number}`, margin, 46);
-
-  // Date top-right
-  const dateStr = new Date().toLocaleDateString('en-GB', {
+async function generateOrderPDF() {
+  const personItems = buildPersonItems();
+  const peopleCount = Object.keys(personItems).length;
+  const totalItems  = Object.values(personItems).reduce((s, a) => s + a.length, 0);
+  const dateStr     = new Date().toLocaleDateString('en-GB', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   });
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8.5);
-  doc.setTextColor(200, 232, 255);
-  doc.text(dateStr, W - margin, 46, { align: 'right' });
 
-  // ── STATS BAR ─────────────────────────────────────────────
-  doc.setFillColor(...bluePl);
-  doc.rect(0, 52, W, 15, 'F');
+  // ── Build the off-screen HTML element ──────────────────────
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:absolute;top:-9999px;left:0;width:794px;';
 
-  const personItems  = buildPersonItems();
-  const peopleCount  = Object.keys(personItems).length;
-  const totalItems   = Object.values(personItems).reduce((s, a) => s + a.length, 0);
+  const personSections = Object.entries(personItems).map(([person, items]) => `
+    <div style="margin-bottom:32px;">
+      <div style="display:flex;align-items:center;padding-bottom:10px;border-bottom:1.5px solid #e8d8c0;margin-bottom:4px;">
+        <div style="width:32px;height:32px;border-radius:50%;background:#c4a882;
+                    display:flex;align-items:center;justify-content:center;
+                    color:#fffef9;font-size:14px;font-weight:700;
+                    flex-shrink:0;margin-right:12px;font-family:'Noto Serif SC',serif;">
+          ${escapeHtml(person.charAt(0).toUpperCase())}
+        </div>
+        <div style="font-size:17px;font-weight:700;color:#4a3220;letter-spacing:0.01em;
+                    font-family:'Noto Serif SC',serif;">
+          ${escapeHtml(person)}
+        </div>
+        <div style="margin-left:auto;font-size:11px;color:#a0826d;letter-spacing:0.06em;
+                    font-family:'Noto Serif SC',serif;">
+          ${items.length} ${items.length === 1 ? 'ITEM' : 'ITEMS'}
+        </div>
+      </div>
+      ${items.map((name, i) => `
+        <div style="display:flex;align-items:center;padding:10px 0 10px 44px;
+                    ${i < items.length - 1 ? 'border-bottom:1px solid #f0e4d0;' : ''}">
+          <span style="color:#c4a882;margin-right:12px;font-size:16px;">—</span>
+          <span style="font-size:15px;color:#3d2b1a;font-family:'Noto Serif SC',serif;">
+            ${escapeHtml(name)}
+          </span>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
 
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9.5);
-  doc.setTextColor(...muted);
-  doc.text(
-    `${peopleCount} ${peopleCount === 1 ? 'person' : 'people'}   ·   ${totalItems} ${totalItems === 1 ? 'item' : 'items'} total`,
-    margin, 62
-  );
+  wrap.innerHTML = `
+    <div style="width:794px;background:#fffef9;font-family:'Noto Serif SC',Georgia,serif;
+                color:#3d2b1a;box-sizing:border-box;">
 
-  // ── PERSON SECTIONS ───────────────────────────────────────
-  let y = 78;
+      <!-- Top accent bar -->
+      <div style="height:5px;background:linear-gradient(90deg,#d4b896,#c4a882,#a0826d,#c4a882,#d4b896);"></div>
 
-  Object.entries(personItems).forEach(([person, items]) => {
-    if (y > 245) { doc.addPage(); y = 20; }
+      <!-- Header -->
+      <div style="padding:48px 60px 36px;display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div style="font-size:32px;font-weight:700;color:#4a3220;letter-spacing:0.02em;line-height:1.15;">
+            Double J Menu
+          </div>
+          <div style="font-size:12px;color:#a0826d;font-style:italic;margin-top:6px;letter-spacing:0.06em;">
+            a product of love
+          </div>
+        </div>
+        <div style="text-align:right;padding-top:4px;">
+          <div style="font-size:18px;font-weight:600;color:#4a3220;letter-spacing:0.04em;">
+            ${escapeHtml(orderState.currentOrder.order_number)}
+          </div>
+          <div style="font-size:11px;color:#8b6f56;margin-top:5px;letter-spacing:0.02em;">
+            ${escapeHtml(dateStr)}
+          </div>
+        </div>
+      </div>
 
-    // Person header bar
-    doc.setFillColor(...blueLt);
-    doc.roundedRect(margin, y, cW, 10, 2.5, 2.5, 'F');
+      <!-- Ornamental divider -->
+      <div style="display:flex;align-items:center;padding:0 60px;margin-bottom:0;">
+        <div style="flex:1;height:1px;background:#e8d8c0;"></div>
+        <div style="margin:0 14px;color:#c4a882;font-size:16px;line-height:1;">✦</div>
+        <div style="flex:1;height:1px;background:#e8d8c0;"></div>
+      </div>
 
-    // Avatar circle
-    doc.setFillColor(...blue);
-    doc.circle(margin + 6, y + 5, 3.8, 'F');
-    doc.setTextColor(...white);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.text(person.charAt(0).toUpperCase(), margin + 6, y + 6.1, { align: 'center' });
+      <!-- Stats bar -->
+      <div style="background:#f5ede0;margin:24px 60px 0;border-radius:6px;padding:11px 20px;
+                  display:flex;gap:20px;align-items:center;">
+        <span style="font-size:11px;color:#a0826d;letter-spacing:0.06em;font-weight:600;">
+          ${peopleCount} ${peopleCount === 1 ? 'PERSON' : 'PEOPLE'}
+        </span>
+        <span style="color:#d4b896;font-size:14px;">·</span>
+        <span style="font-size:11px;color:#a0826d;letter-spacing:0.06em;font-weight:600;">
+          ${totalItems} ${totalItems === 1 ? 'ITEM' : 'ITEMS'} TOTAL
+        </span>
+      </div>
 
-    // Person name
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...dark);
-    doc.text(person, margin + 13, y + 6.8);
+      <!-- Person sections -->
+      <div style="padding:36px 60px 24px;">
+        ${personSections.length
+          ? personSections
+          : '<p style="color:#a0826d;font-style:italic;text-align:center;padding:24px 0;">No items selected.</p>'
+        }
+      </div>
 
-    // Item count badge (right)
-    const badge = `${items.length} item${items.length !== 1 ? 's' : ''}`;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
-    doc.setTextColor(...blue);
-    doc.text(badge, W - margin - 1, y + 6.8, { align: 'right' });
+      <!-- Footer ornament -->
+      <div style="display:flex;align-items:center;padding:0 60px;margin-bottom:28px;">
+        <div style="flex:1;height:1px;background:#e8d8c0;"></div>
+        <div style="margin:0 14px;color:#c4a882;font-size:16px;line-height:1;">✦</div>
+        <div style="flex:1;height:1px;background:#e8d8c0;"></div>
+      </div>
 
-    y += 13;
+      <!-- Footer message -->
+      <div style="padding:0 60px 52px;text-align:center;">
+        <div style="font-size:15px;font-style:italic;color:#4a3220;letter-spacing:0.02em;margin-bottom:10px;">
+          Wish you have a good time ~
+        </div>
+        <div style="font-size:12px;color:#a0826d;letter-spacing:0.04em;">
+          — love from Juan &amp; Jinjin
+        </div>
+        <div style="display:flex;justify-content:center;gap:18px;margin-top:20px;">
+          <div style="width:5px;height:5px;border-radius:50%;background:#d4b896;"></div>
+          <div style="width:5px;height:5px;border-radius:50%;background:#c4a882;"></div>
+          <div style="width:5px;height:5px;border-radius:50%;background:#d4b896;"></div>
+        </div>
+      </div>
 
-    // Items
-    items.forEach((name, i) => {
-      if (y > 272) { doc.addPage(); y = 20; }
+      <!-- Bottom accent bar -->
+      <div style="height:5px;background:linear-gradient(90deg,#d4b896,#c4a882,#a0826d,#c4a882,#d4b896);"></div>
+    </div>
+  `;
 
-      // Alternating row background
-      if (i % 2 === 0) {
-        doc.setFillColor(...rowAlt);
-        doc.rect(margin, y - 1.5, cW, 8.5, 'F');
-      }
+  document.body.appendChild(wrap);
 
-      // Bullet dot
-      doc.setFillColor(...blueLt);
-      doc.circle(margin + 3.5, y + 3, 1.4, 'F');
+  try {
+    await document.fonts.ready;
 
-      // Item name
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10.5);
-      doc.setTextColor(...dark);
-      doc.text(name, margin + 9, y + 5);
-
-      y += 9.5;
+    const canvas = await html2canvas(wrap.firstElementChild, {
+      scale: 2,
+      backgroundColor: '#fffef9',
+      logging: false,
+      useCORS: true,
     });
 
-    y += 7;
-  });
+    const { jsPDF } = window.jspdf;
+    const pdf     = new jsPDF({ unit: 'mm', format: 'a4' });
+    const pdfW    = pdf.internal.pageSize.getWidth();
+    const pdfH    = pdf.internal.pageSize.getHeight();
+    const imgData = canvas.toDataURL('image/jpeg', 0.93);
+    const imgH    = (canvas.height / canvas.width) * pdfW;
 
-  // ── FOOTER ────────────────────────────────────────────────
-  const fY = Math.max(y + 4, 260);
+    pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, imgH);
+    let rendered = pdfH;
+    while (rendered < imgH) {
+      pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, -rendered, pdfW, imgH);
+      rendered += pdfH;
+    }
 
-  // Decorative rule
-  doc.setDrawColor(...blueLt);
-  doc.setLineWidth(0.5);
-  doc.line(margin, fY, W - margin, fY);
-
-  // Diamond accent on rule centre
-  doc.setFillColor(...blueLt);
-  const cx = W / 2;
-  // Rotate a square 45° by drawing two triangles
-  doc.triangle(cx, fY - 2.2, cx + 2.2, fY, cx, fY + 2.2, 'F');
-  doc.triangle(cx, fY - 2.2, cx - 2.2, fY, cx, fY + 2.2, 'F');
-
-  // Wish message
-  doc.setFont('helvetica', 'italic');
-  doc.setFontSize(12);
-  doc.setTextColor(...dark);
-  doc.text('Wish you have a good time ~', cx, fY + 11, { align: 'center' });
-
-  // Signature
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.setTextColor(...muted);
-  doc.text('— love from Juan & Jinjin', cx, fY + 19, { align: 'center' });
-
-  // Three dot accents
-  doc.setFillColor(...blueLt);
-  [-20, 0, 20].forEach(offset => doc.circle(cx + offset, fY + 26, 1.3, 'F'));
-
-  return doc.output('blob');
+    return pdf.output('blob');
+  } finally {
+    document.body.removeChild(wrap);
+  }
 }
 
-function previewOrderPDF() {
+
+async function previewOrderPDF() {
+  showNotification('Generating preview…', 'info');
   let pdfBlob;
   try {
-    pdfBlob = generateOrderPDF();
+    pdfBlob = await generateOrderPDF();
   } catch (e) {
     console.error('PDF preview failed:', e);
     showNotification('Could not generate preview.', 'error');
@@ -500,7 +490,7 @@ async function shareOrderSummary() {
 
   let pdfBlob;
   try {
-    pdfBlob = generateOrderPDF();
+    pdfBlob = await generateOrderPDF();
   } catch (e) {
     console.error('PDF generation failed:', e);
     showNotification('Could not generate PDF.', 'error');
